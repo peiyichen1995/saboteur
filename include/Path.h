@@ -12,6 +12,12 @@ public:
 
   std::string operator()(int i, int j);
 
+  // rotate path
+  void rotate();
+
+  // draw pixel based on connectivity
+  void draw();
+
 protected:
 private:
   Connectivity _conn;

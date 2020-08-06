@@ -3,13 +3,19 @@
 Path::Path(Connectivity conn, bool T, bool R, bool B, bool L)
   : _conn(conn), _T(T), _R(R), _B(B), _L(L), _pixels(pixelType0())
 {
-  if (T)
+  draw();
+}
+
+void
+Path::draw()
+{
+  if (_T)
     _pixels[1][2] = "\033[1;31m ║ \033[0m";
-  if (R)
+  if (_R)
     _pixels[2][3] = "\033[1;31m══\033[0m";
-  if (B)
+  if (_B)
     _pixels[3][2] = "\033[1;31m ║ \033[0m";
-  if (L)
+  if (_L)
     _pixels[2][1] = "\033[1;31m══\033[0m";
 
   if (_conn.cardinality() == 0)
@@ -51,4 +57,23 @@ std::string
 Path::operator()(int i, int j)
 {
   return _pixels[i][j];
+}
+
+void
+Path::rotate()
+{
+  // rotate T, R, B, L
+  bool tempT = _T;
+  bool tempR = _R;
+  bool tempB = _B;
+  bool tempL = _L;
+
+  _T = tempB;
+  _B = tempT;
+  _R = tempL;
+  _L = tempR;
+
+  _conn.rotate();
+
+  draw();
 }

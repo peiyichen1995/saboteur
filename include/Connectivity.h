@@ -11,6 +11,9 @@ public:
 
   int cardinality() { return (int)_TR + (int)_TB + (int)_TL + (int)_RB + (int)_RL + (int)_BL; }
 
+  // connectivity for a rotated path
+  void rotate();
+
   // return connectivity between two directions
   bool TR() { return _TR; }
   bool TB() { return _TB; }
