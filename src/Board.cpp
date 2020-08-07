@@ -16,31 +16,58 @@ Board::Board(unsigned int row, unsigned int col) : _row(row), _col(col)
 void
 Board::print()
 {
+  std::cout << "        ";
+  for (unsigned int j = 0; j < _col; j++)
+    for (unsigned int w = 0; w < SLOT_PIXEL_WIDTH; w++)
+      if (w == (SLOT_PIXEL_WIDTH - 1) / 2)
+        std::cout << "   " << j << "    ";
+      else
+        std::cout << " ";
+  std::cout << std::endl;
+  std::cout << std::endl;
+
   for (unsigned int i = 0; i < _row; i++)
   {
     for (unsigned int h = 0; h < SLOT_PIXEL_HEIGHT - 1; h++)
     {
+      if (h == (SLOT_PIXEL_HEIGHT - 1) / 2)
+        std::cout << "  " << i << "  ";
+      else
+        std::cout << "     ";
       for (unsigned int j = 0; j < _col; j++)
       {
         for (unsigned int w = 0; w < SLOT_PIXEL_WIDTH - 1; w++)
-          std::cout << (*_slots[i][j])(h, w);
+        {
+          if (i > 0 && h == 0)
+          {
+            std::string upper = (*_slots[i - 1][j])(SLOT_PIXEL_HEIGHT - 1, w);
+            std::string lower = (*_slots[i][j])(0, w);
+            std::cout << std::min(upper, lower);
+          }
+          else if (j > 0 && w == 0)
+          {
+            std::string left = (*_slots[i][j - 1])(h, SLOT_PIXEL_WIDTH - 1);
+            std::string right = (*_slots[i][j])(h, 0);
+            std::cout << std::min(left, right);
+          }
+          else
+            std::cout << (*_slots[i][j])(h, w);
+        }
         if (j == _col - 1)
           std::cout << (*_slots[i][j])(h, SLOT_PIXEL_WIDTH - 1);
       }
       std::cout << std::endl;
     }
-    if (i == _row - 1)
-    {
-      for (unsigned int j = 0; j < _col; j++)
-      {
-        for (unsigned int w = 0; w < SLOT_PIXEL_WIDTH - 1; w++)
-          std::cout << (*_slots[i][j])(SLOT_PIXEL_HEIGHT - 1, w);
-        if (j == _col - 1)
-          std::cout << (*_slots[i][j])(SLOT_PIXEL_HEIGHT - 1, SLOT_PIXEL_WIDTH - 1);
-      }
-      std::cout << std::endl;
-    }
   }
+  std::cout << "     ";
+  for (unsigned int j = 0; j < _col; j++)
+  {
+    for (unsigned int w = 0; w < SLOT_PIXEL_WIDTH - 1; w++)
+      std::cout << (*_slots[_row - 1][j])(SLOT_PIXEL_HEIGHT - 1, w);
+    if (j == _col - 1)
+      std::cout << (*_slots[_row - 1][j])(SLOT_PIXEL_HEIGHT - 1, SLOT_PIXEL_WIDTH - 1);
+  }
+  std::cout << std::endl;
 }
 
 bool
