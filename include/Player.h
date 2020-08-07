@@ -11,6 +11,17 @@ public:
   // discard cards
   void discardCard(unsigned int i) { _hand.erase(_hand.begin() + i); }
 
+  // rotate card
+  void rotateCard(unsigned int i) { _hand[i]->rotate(); }
+
+  // print player's hand card
+  void printHand();
+
+  // number of cards in hand
+  unsigned int handSize() { return _hand.size(); }
+
+  Path * getPath(unsigned int i) { return dynamic_cast<Path *>(_hand[i]); }
+
 protected:
 private:
   std::vector<Card *> _hand;

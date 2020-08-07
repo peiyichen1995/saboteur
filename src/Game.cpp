@@ -1,6 +1,9 @@
 #include <algorithm>
 #include <ctime>
 #include <cstdlib>
+#include <assert.h>
+#include <sstream>
+#include <fstream>
 
 #include "Game.h"
 
@@ -69,14 +72,147 @@ Game::distributeCardToPlayer(unsigned int i)
 void
 Game::onGameBegin()
 {
+  _turn = 0;
   for (unsigned int i = 0; i < 5; i++)
     for (unsigned int j = 0; j < _players.size(); j++)
       distributeCardToPlayer(j);
-  _board->print();
 }
 
 void
 Game::start()
 {
   onGameBegin();
+  while (!endGame())
+  {
+    onTurnBegin();
+    onTurnEnd();
+  }
+}
+
+void
+Game::print()
+{
+  for (unsigned int i = 0; i < 100; i++)
+    std::cout << std::endl;
+
+  std::string line;
+  std::ifstream out("logo.txt");
+  while (std::getline(out, line))
+    std::cout << line << std::endl;
+  out.close();
+
+  for (unsigned int i = 0; i < 5; i++)
+    std::cout << std::endl;
+
+  _board->print();
+  for (unsigned int j = 0; j < _players.size(); j++)
+  {
+    std::cout << std::endl;
+    std::cout << "Player " << j << ":" << std::endl;
+    _players[j]->printHand();
+  }
+  printCommands();
+}
+
+void
+Game::onTurnBegin()
+{
+  print();
+  _num_card_on_turn_begin = _players[currentPlayer()]->handSize();
+  _placed_path = false;
+  for (std::string line;;)
+  {
+    std::cout << "Player " << currentPlayer() << " enter command: " && std::getline(std::cin, line);
+    std::istringstream user_input(line);
+    std::vector<std::string> commands;
+    std::string command;
+    while (std::getline(user_input, command, ' '))
+      commands.push_back(command);
+    if (commands[0] == "rotate")
+    {
+      if (commands.size() != 2)
+        printCommands();
+      else
+      {
+        int index = std::stoi(commands[1]);
+        _players[currentPlayer()]->rotateCard(index);
+        print();
+      }
+    }
+    else if (commands[0] == "path")
+    {
+      if (commands.size() != 4)
+        printCommands();
+      else if (_placed_path)
+      {
+        std::cout << "You can only place one path each turn." << std::endl;
+      }
+      else
+      {
+        int index = std::stoi(commands[1]);
+        int x = std::stoi(commands[2]);
+        int y = std::stoi(commands[3]);
+        _board->placePathInSlot(_players[currentPlayer()]->getPath(index), x, y);
+        _players[currentPlayer()]->discardCard(index);
+        _placed_path = true;
+        print();
+      }
+    }
+    else if (commands[0] == "end")
+    {
+      if (commands.size() != 1)
+        printCommands();
+      else if (_players[currentPlayer()]->handSize() == _num_card_on_turn_begin)
+        std::cout << "Your should either play a card or discard a card before you end your turn."
+                  << std::endl;
+      else
+        break;
+    }
+    else if (commands[0] == "discard")
+    {
+      if (commands.size() != 2)
+        printCommands();
+      else if (_players[currentPlayer()]->handSize() < _num_card_on_turn_begin)
+      {
+        std::cout << "You may only discard a card if you haven't played any card in this turn."
+                  << std::endl;
+      }
+      else
+      {
+        int index = std::stoi(commands[1]);
+        _players[currentPlayer()]->discardCard(index);
+        break;
+      }
+    }
+    else
+      std::cout << "unsupported command" << std::endl;
+  }
+}
+
+void
+Game::onTurnEnd()
+{
+  while (_players[currentPlayer()]->handSize() < 5)
+    if (!_deck.empty())
+      distributeCardToPlayer(currentPlayer());
+    else
+      break;
+  _turn++;
+}
+
+void
+Game::printCommands()
+{
+  std::cout << std::endl;
+  std::cout << dividerBottom() << std::endl;
+  std::cout << "Avalable commands:" << std::endl;
+  std::cout << "     rotate <card>              ----     rotate a path card" << std::endl;
+  std::cout << "     path <card> <x> <y>        ----     place a path card at that location"
+            << std::endl;
+  std::cout << "     action <card> <player>     ----     place an action card on that player"
+            << std::endl;
+  std::cout << "     discard <card>             ----     discard that card" << std::endl;
+  std::cout << "     end                        ----     end your current turn" << std::endl;
+  std::cout << dividerTop() << std::endl;
+  std::cout << std::endl;
 }

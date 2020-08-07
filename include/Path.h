@@ -10,10 +10,8 @@ public:
   // constructor
   Path(Connectivity conn, bool T, bool R, bool B, bool L);
 
-  std::string operator()(int i, int j);
-
   // rotate path
-  void rotate();
+  void rotate() override;
 
   // draw pixel based on connectivity
   void draw();
@@ -25,5 +23,4 @@ private:
   bool _R;
   bool _B;
   bool _L;
-  std::vector<std::vector<std::string>> _pixels;
 };

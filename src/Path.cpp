@@ -1,7 +1,7 @@
 #include "Path.h"
 
 Path::Path(Connectivity conn, bool T, bool R, bool B, bool L)
-  : _conn(conn), _T(T), _R(R), _B(B), _L(L), _pixels(pixelType0())
+  : Card(), _conn(conn), _T(T), _R(R), _B(B), _L(L)
 {
   draw();
 }
@@ -9,6 +9,8 @@ Path::Path(Connectivity conn, bool T, bool R, bool B, bool L)
 void
 Path::draw()
 {
+  _pixels = pixelType0();
+
   if (_T)
     _pixels[1][2] = "\033[1;31m ║ \033[0m";
   if (_R)
@@ -51,12 +53,6 @@ Path::draw()
     _pixels[2][2] = "\033[1;31m═╬═\033[0m";
   else
     std::cerr << "unsupported cardinality = " << _conn.cardinality() << std::endl;
-}
-
-std::string
-Path::operator()(int i, int j)
-{
-  return _pixels[i][j];
 }
 
 void
