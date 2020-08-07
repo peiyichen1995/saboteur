@@ -15,6 +15,9 @@ public:
 
   bool placePathInSlot(Path * p, int i, int j);
 
+  // define neighbors for each slot
+  void defineNeighbors();
+
 protected:
 private:
   unsigned int _row;

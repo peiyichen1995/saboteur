@@ -1,7 +1,10 @@
 #include "Slot.h"
 #include "Utils.h"
 
-Slot::Slot() : _path(nullptr) { _pixels = pixelType0(); }
+Slot::Slot() : _path(nullptr), _T(nullptr), _B(nullptr), _R(nullptr), _L(nullptr)
+{
+  _pixels = pixelType0();
+}
 
 void
 Slot::print()
@@ -27,12 +30,35 @@ bool
 Slot::placePath(Path * p)
 {
   if (!_path)
-    _path = p;
+  {
+    if ((_T && _T->_path) && (_T->_path->B() != p->T()))
+    {
+      std::cerr << "illegal top neighbor" << std::endl;
+      return false;
+    }
+    if ((_R && _R->_path) && (_R->_path->L() != p->R()))
+    {
+      std::cerr << "illegal right neighbor" << std::endl;
+      return false;
+    }
+    if ((_B && _B->_path) && (_B->_path->T() != p->B()))
+    {
+      std::cerr << "illegal bottom neighbor" << std::endl;
+      return false;
+    }
+    if ((_L && _L->_path) && (_L->_path->R() != p->L()))
+    {
+      std::cerr << "illegal left neighbor" << std::endl;
+      return false;
+    }
+  }
   else
   {
     std::cerr << "this slot already has a path" << std::endl;
     return false;
   }
+
+  _path = p;
 
   return true;
 }

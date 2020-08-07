@@ -38,6 +38,10 @@ Game::Game(unsigned int num)
   createPathHelper(conn6, true, false, true, false, 1);
   createPathHelper(conn6, false, true, false, true, 1);
 
+  // create start Path
+  _start = new StartingPath(conn3, true, true, true, true);
+  _board->placePathInSlot(_start, 2, 0);
+
   // shuffle deck
   std::srand(unsigned(std::time(0)));
   std::random_shuffle(_deck.begin(), _deck.end());
@@ -152,10 +156,16 @@ Game::onTurnBegin()
         int index = std::stoi(commands[1]);
         int x = std::stoi(commands[2]);
         int y = std::stoi(commands[3]);
-        _board->placePathInSlot(_players[currentPlayer()]->getPath(index), x, y);
-        _players[currentPlayer()]->discardCard(index);
-        _placed_path = true;
-        print();
+        if (_board->placePathInSlot(_players[currentPlayer()]->getPath(index), x, y))
+        {
+          _players[currentPlayer()]->discardCard(index);
+          _placed_path = true;
+          print();
+        }
+        else
+        {
+          std::cout << "failed to place path" << std::endl;
+        }
       }
     }
     else if (commands[0] == "end")

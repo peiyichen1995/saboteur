@@ -11,16 +11,18 @@ Board::Board(unsigned int row, unsigned int col) : _row(row), _col(col)
       _slots[i][j] = new Slot();
     }
   }
+
+  defineNeighbors();
 }
 
 void
 Board::print()
 {
-  std::cout << "        ";
+  std::cout << "      ";
   for (unsigned int j = 0; j < _col; j++)
     for (unsigned int w = 0; w < SLOT_PIXEL_WIDTH; w++)
       if (w == (SLOT_PIXEL_WIDTH - 1) / 2)
-        std::cout << "   " << j << "    ";
+        std::cout << "    " << j << "     ";
       else
         std::cout << " ";
   std::cout << std::endl;
@@ -74,4 +76,23 @@ bool
 Board::placePathInSlot(Path * p, int i, int j)
 {
   return _slots[i][j]->placePath(p);
+}
+
+void
+Board::defineNeighbors()
+{
+  for (unsigned int i = 0; i < _row; i++)
+  {
+    for (unsigned int j = 0; j < _col; j++)
+    {
+      if (i >= 1)
+        _slots[i][j]->addT(_slots[i - 1][j]);
+      if (i + 1 < _row)
+        _slots[i][j]->addB(_slots[i + 1][j]);
+      if (j >= 1)
+        _slots[i][j]->addL(_slots[i][j - 1]);
+      if (j + 1 < _col)
+        _slots[i][j]->addR(_slots[i][j + 1]);
+    }
+  }
 }

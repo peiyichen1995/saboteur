@@ -58,4 +58,7 @@ private:
 
   // whether the current player has placed a path
   bool _placed_path;
+
+  // start Path
+  Path * _start;
 };

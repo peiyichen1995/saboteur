@@ -16,6 +16,14 @@ public:
   // draw pixel based on connectivity
   void draw();
 
+  bool T() { return _T; }
+
+  bool R() { return _R; }
+
+  bool B() { return _B; }
+
+  bool L() { return _L; }
+
 protected:
 private:
   Connectivity _conn;
