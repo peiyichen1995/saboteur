@@ -11,6 +11,9 @@ public:
   // constructor
   Game(unsigned int num);
 
+  // destructor
+  ~Game();
+
   // start Game
   void start();
 
@@ -34,15 +37,20 @@ private:
   // end of each player's end
   void onTurnEnd();
 
-  // shall we end the game?
-  bool endGame() { return false; }
-
   unsigned int currentPlayer() { return _turn % _players.size(); }
+
+  void printDeckInfo();
 
   void printCommands();
 
+  // shall we continue?
+  bool _continue;
+
   // all path cards
-  std::vector<Path *> _deck;
+  std::vector<Card *> _deck;
+
+  // all discarded cards
+  std::vector<Card *> _graveyard;
 
   // game Board
   Board * _board;
@@ -56,9 +64,11 @@ private:
   // number of cards in hand on turn begin
   unsigned int _num_card_on_turn_begin;
 
-  // whether the current player has placed a path
-  bool _placed_path;
-
   // start Path
   Path * _start;
+
+  // goals
+  Path * _treasure;
+  Path * _stone1;
+  Path * _stone2;
 };

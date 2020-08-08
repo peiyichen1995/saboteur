@@ -14,7 +14,9 @@ public:
   void rotate() override;
 
   // draw pixel based on connectivity
-  void draw();
+  virtual void draw(bool highlight = false) override;
+
+  Connectivity connectivity() { return _conn; }
 
   bool T() { return _T; }
 
@@ -24,11 +26,17 @@ public:
 
   bool L() { return _L; }
 
+  virtual bool isStart() { return false; }
+  virtual bool isGoal() { return false; }
+  virtual bool isTreasure() { return false; }
+  virtual bool isStone() { return false; }
+
 protected:
-private:
   Connectivity _conn;
   bool _T;
   bool _R;
   bool _B;
   bool _L;
+
+private:
 };

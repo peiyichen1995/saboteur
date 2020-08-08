@@ -5,6 +5,9 @@
 class Player
 {
 public:
+  // destructor
+  ~Player();
+
   // draw card
   void addToHand(Card * c) { _hand.push_back(c); }
 
@@ -20,6 +23,7 @@ public:
   // number of cards in hand
   unsigned int handSize() { return _hand.size(); }
 
+  Card * getCard(unsigned int i) { return _hand[i]; }
   Path * getPath(unsigned int i) { return dynamic_cast<Path *>(_hand[i]); }
 
 protected:

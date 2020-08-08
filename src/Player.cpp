@@ -1,6 +1,12 @@
 #include "Player.h"
 #include "Slot.h"
 
+Player::~Player()
+{
+  for (Card * c : _hand)
+    delete c;
+}
+
 void
 Player::printHand()
 {

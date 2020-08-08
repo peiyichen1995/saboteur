@@ -1,15 +1,9 @@
-#include "Path.h"
-
-Path::Path(Connectivity conn, bool T, bool R, bool B, bool L)
-  : Card(), _conn(conn), _T(T), _R(R), _B(B), _L(L)
-{
-  draw();
-}
+#include "StartingPath.h"
 
 void
-Path::draw(bool highlight)
+StartingPath::draw(bool highlight)
 {
-  std::string colorPrepend = highlight ? "\033[38;5;10m" : "\033[38;5;236m";
+  std::string colorPrepend = highlight ? "\033[38;5;10;48;5;250m" : "\033[38;5;236;48;5;250m";
   std::string colorAppend = "\033[0m";
 
   _pixels = pixelType0();
@@ -39,26 +33,7 @@ Path::draw(bool highlight)
   {
   }
   else if (_conn.cardinality() == 1 || _conn.cardinality() == 3 || _conn.cardinality() == 6)
-    _pixels[2][2] = colorPrepend + "███" + colorAppend;
+    _pixels[2][2] = colorPrepend + "###" + colorAppend;
   else
     std::cerr << "unsupported cardinality = " << _conn.cardinality() << std::endl;
-}
-
-void
-Path::rotate()
-{
-  // rotate T, R, B, L
-  bool tempT = _T;
-  bool tempR = _R;
-  bool tempB = _B;
-  bool tempL = _L;
-
-  _T = tempB;
-  _B = tempT;
-  _R = tempL;
-  _L = tempR;
-
-  _conn.rotate();
-
-  draw();
 }

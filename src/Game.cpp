@@ -9,6 +9,9 @@
 
 Game::Game(unsigned int num)
 {
+  // std::srand(unsigned(std::time(0)));
+  std::srand(0);
+
   _board = new Board(5, 9);
 
   // build connectivity
@@ -42,8 +45,17 @@ Game::Game(unsigned int num)
   _start = new StartingPath(conn3, true, true, true, true);
   _board->placePathInSlot(_start, 2, 0);
 
+  // place goals
+  std::vector<int> secret = {0, 2, 4};
+  std::random_shuffle(secret.begin(), secret.end());
+  _treasure = new Treasure(conn3, true, true, true, true);
+  _board->placePathInSlot(_treasure, secret[0], 8);
+  _stone1 = new Stone(conn3, true, true, true, true);
+  _board->placePathInSlot(_stone1, secret[1], 8);
+  _stone2 = new Stone(conn3, true, true, true, true);
+  _board->placePathInSlot(_stone2, secret[2], 8);
+
   // shuffle deck
-  std::srand(unsigned(std::time(0)));
   std::random_shuffle(_deck.begin(), _deck.end());
 
   Player * temp;
@@ -53,6 +65,24 @@ Game::Game(unsigned int num)
     temp = new Player();
     _players.push_back(temp);
   }
+}
+
+Game::~Game()
+{
+  // clear deck
+  for (Card * c : _deck)
+    delete c;
+
+  // clear graveyard
+  for (Card * c : _graveyard)
+    delete c;
+
+  // clear players
+  for (Player * p : _players)
+    delete p;
+
+  // clear board
+  delete _board;
 }
 
 void
@@ -76,6 +106,7 @@ Game::distributeCardToPlayer(unsigned int i)
 void
 Game::onGameBegin()
 {
+  _continue = true;
   _turn = 0;
   for (unsigned int i = 0; i < 5; i++)
     for (unsigned int j = 0; j < _players.size(); j++)
@@ -86,7 +117,7 @@ void
 Game::start()
 {
   onGameBegin();
-  while (!endGame())
+  while (_continue)
   {
     onTurnBegin();
     onTurnEnd();
@@ -105,7 +136,12 @@ Game::print()
     std::cout << line << std::endl;
   out.close();
 
-  for (unsigned int i = 0; i < 5; i++)
+  for (unsigned int i = 0; i < 2; i++)
+    std::cout << std::endl;
+
+  printDeckInfo();
+
+  for (unsigned int i = 0; i < 2; i++)
     std::cout << std::endl;
 
   _board->print();
@@ -115,6 +151,7 @@ Game::print()
     std::cout << "Player " << j << ":" << std::endl;
     _players[j]->printHand();
   }
+
   printCommands();
 }
 
@@ -122,8 +159,8 @@ void
 Game::onTurnBegin()
 {
   print();
+  _board->resetColor();
   _num_card_on_turn_begin = _players[currentPlayer()]->handSize();
-  _placed_path = false;
   for (std::string line;;)
   {
     std::cout << "Player " << currentPlayer() << " enter command: " && std::getline(std::cin, line);
@@ -147,10 +184,6 @@ Game::onTurnBegin()
     {
       if (commands.size() != 4)
         printCommands();
-      else if (_placed_path)
-      {
-        std::cout << "You can only place one path each turn." << std::endl;
-      }
       else
       {
         int index = std::stoi(commands[1]);
@@ -159,24 +192,11 @@ Game::onTurnBegin()
         if (_board->placePathInSlot(_players[currentPlayer()]->getPath(index), x, y))
         {
           _players[currentPlayer()]->discardCard(index);
-          _placed_path = true;
-          print();
+          break;
         }
         else
-        {
           std::cout << "failed to place path" << std::endl;
-        }
       }
-    }
-    else if (commands[0] == "end")
-    {
-      if (commands.size() != 1)
-        printCommands();
-      else if (_players[currentPlayer()]->handSize() == _num_card_on_turn_begin)
-        std::cout << "Your should either play a card or discard a card before you end your turn."
-                  << std::endl;
-      else
-        break;
     }
     else if (commands[0] == "discard")
     {
@@ -190,7 +210,18 @@ Game::onTurnBegin()
       else
       {
         int index = std::stoi(commands[1]);
+        _graveyard.push_back(_players[currentPlayer()]->getCard(index));
         _players[currentPlayer()]->discardCard(index);
+        break;
+      }
+    }
+    else if (commands[0] == "quit")
+    {
+      if (commands.size() != 1)
+        printCommands();
+      else
+      {
+        _continue = false;
         break;
       }
     }
@@ -202,12 +233,23 @@ Game::onTurnBegin()
 void
 Game::onTurnEnd()
 {
+  if (!_continue)
+    return;
+
   while (_players[currentPlayer()]->handSize() < 5)
     if (!_deck.empty())
       distributeCardToPlayer(currentPlayer());
     else
       break;
+
   _turn++;
+}
+
+void
+Game::printDeckInfo()
+{
+  std::cout << "Deck: " << _deck.size() << "             Graveyard: " << _graveyard.size()
+            << std::endl;
 }
 
 void
@@ -222,7 +264,7 @@ Game::printCommands()
   std::cout << "     action <card> <player>     ----     place an action card on that player"
             << std::endl;
   std::cout << "     discard <card>             ----     discard that card" << std::endl;
-  std::cout << "     end                        ----     end your current turn" << std::endl;
+  std::cout << "     quit                       ----     quit game" << std::endl;
   std::cout << dividerTop() << std::endl;
   std::cout << std::endl;
 }

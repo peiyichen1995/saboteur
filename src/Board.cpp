@@ -7,12 +7,17 @@ Board::Board(unsigned int row, unsigned int col) : _row(row), _col(col)
   {
     _slots[i].resize(col);
     for (unsigned int j = 0; j < col; j++)
-    {
       _slots[i][j] = new Slot();
-    }
   }
 
   defineNeighbors();
+}
+
+Board::~Board()
+{
+  for (unsigned int i = 0; i < _row; i++)
+    for (unsigned int j = 0; j < _col; j++)
+      delete _slots[i][j];
 }
 
 void
@@ -82,7 +87,6 @@ void
 Board::defineNeighbors()
 {
   for (unsigned int i = 0; i < _row; i++)
-  {
     for (unsigned int j = 0; j < _col; j++)
     {
       if (i >= 1)
@@ -94,5 +98,12 @@ Board::defineNeighbors()
       if (j + 1 < _col)
         _slots[i][j]->addR(_slots[i][j + 1]);
     }
-  }
+}
+
+void
+Board::resetColor()
+{
+  for (unsigned int i = 0; i < _row; i++)
+    for (unsigned int j = 0; j < _col; j++)
+      _slots[i][j]->resetColor();
 }

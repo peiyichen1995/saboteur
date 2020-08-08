@@ -8,8 +8,9 @@ class Board;
 class Board
 {
 public:
-  // constructor of Board
   Board(unsigned int row, unsigned int col);
+
+  ~Board();
 
   void print();
 
@@ -17,6 +18,8 @@ public:
 
   // define neighbors for each slot
   void defineNeighbors();
+
+  void resetColor();
 
 protected:
 private:

@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "StartingPath.h"
+#include "Treasure.h"
+#include "Stone.h"
 
 #define SLOT_PIXEL_WIDTH 5
 #define SLOT_PIXEL_HEIGHT 5
@@ -16,7 +18,9 @@ class Slot
 public:
   Slot();
 
-  std::string operator()(int i, int j);
+  virtual ~Slot() { delete _path; }
+
+  virtual std::string operator()(int i, int j);
 
   void print();
 
@@ -40,8 +44,22 @@ public:
 
   Slot * const L() { return _L; }
 
+  void resetColor()
+  {
+    if (_path)
+      _path->draw();
+  }
+
+  bool isConnectedToStart(std::vector<Slot *> & final_path);
+
 protected:
-private:
+  bool isConnectedToStartThrough(Slot * current,
+                                 Slot * from,
+                                 std::vector<Slot *> & visited,
+                                 std::vector<Slot *> & final_path);
+
+  bool isConnectedABC(Slot * A, Slot * B, Slot * C);
+
   // pixels
   std::vector<std::vector<std::string>> _pixels;
   // path in slot
@@ -54,4 +72,6 @@ private:
   Slot * _R;
   // left neighbour
   Slot * _L;
+
+private:
 };
