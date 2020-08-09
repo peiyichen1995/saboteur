@@ -41,6 +41,22 @@ Game::Game(unsigned int num)
   createPathHelper(conn6, true, false, true, false, 1);
   createPathHelper(conn6, false, true, false, true, 1);
 
+  // create broken tools
+  createBrokenToolHelper(Tool::shovel, 3);
+  createBrokenToolHelper(Tool::lantern, 3);
+  createBrokenToolHelper(Tool::cart, 3);
+
+  // creat fixed tools
+  createFixedToolHelper(Tool::shovel, 2);
+  createFixedToolHelper(Tool::lantern, 2);
+  createFixedToolHelper(Tool::cart, 2);
+  createFixedToolHelper(Tool::lanternandcart, 1);
+  createFixedToolHelper(Tool::lanternandshovel, 1);
+  createFixedToolHelper(Tool::shovelandcart, 1);
+
+  // shuffle deck
+  std::random_shuffle(_deck.begin(), _deck.end());
+
   // create start Path
   _start = new StartingPath(conn3, true, true, true, true);
   _board->placePathInSlot(_start, 2, 0);
@@ -55,15 +71,12 @@ Game::Game(unsigned int num)
   _stone2 = new Stone(conn3, true, true, true, true);
   _board->placePathInSlot(_stone2, secret[2], 8);
 
-  // shuffle deck
-  std::random_shuffle(_deck.begin(), _deck.end());
-
-  Player * temp;
+  Player * player;
   // create players
   for (unsigned int i = 0; i < num; i++)
   {
-    temp = new Player();
-    _players.push_back(temp);
+    player = new Player();
+    _players.push_back(player);
   }
 }
 
@@ -88,10 +101,32 @@ Game::~Game()
 void
 Game::createPathHelper(Connectivity conn, bool T, bool R, bool B, bool L, unsigned int num)
 {
-  Path * temp = nullptr;
+  Card * temp = nullptr;
   for (unsigned int i = 0; i < num; i++)
   {
     temp = new Path(conn, T, R, B, L);
+    _deck.push_back(temp);
+  }
+}
+
+void
+Game::createBrokenToolHelper(Tool tool, unsigned int num)
+{
+  Card * temp = nullptr;
+  for (unsigned int i = 0; i < num; i++)
+  {
+    temp = new BrokenTool(tool);
+    _deck.push_back(temp);
+  }
+}
+
+void
+Game::createFixedToolHelper(Tool tool, unsigned int num)
+{
+  Card * temp = nullptr;
+  for (unsigned int i = 0; i < num; i++)
+  {
+    temp = new FixedTool(tool);
     _deck.push_back(temp);
   }
 }
@@ -149,6 +184,7 @@ Game::print()
   {
     std::cout << std::endl;
     std::cout << "Player " << j << ":" << std::endl;
+    _players[j]->printStatus();
     _players[j]->printHand();
   }
 
@@ -169,7 +205,7 @@ Game::onTurnBegin()
     std::string command;
     while (std::getline(user_input, command, ' '))
       commands.push_back(command);
-    if (commands[0] == "rotate")
+    if (commands[0] == "r")
     {
       if (commands.size() != 2)
         printCommands();
@@ -180,25 +216,69 @@ Game::onTurnBegin()
         print();
       }
     }
-    else if (commands[0] == "path")
+    else if (commands[0] == "p")
     {
       if (commands.size() != 4)
         printCommands();
       else
       {
-        int index = std::stoi(commands[1]);
-        int x = std::stoi(commands[2]);
-        int y = std::stoi(commands[3]);
-        if (_board->placePathInSlot(_players[currentPlayer()]->getPath(index), x, y))
+        if (_players[currentPlayer()]->hasBrokenTool())
+          std::cout << "You have a broken tool!" << std::endl;
+        else
         {
-          _players[currentPlayer()]->discardCard(index);
+          int index = std::stoi(commands[1]);
+          int x = std::stoi(commands[2]);
+          int y = std::stoi(commands[3]);
+          if (_board->placePathInSlot(_players[currentPlayer()]->getPath(index), x, y))
+          {
+            _players[currentPlayer()]->discardCard(index);
+            break;
+          }
+          else
+            std::cout << "failed to place path" << std::endl;
+        }
+      }
+    }
+    else if (commands[0] == "b")
+    {
+      if (commands.size() != 3)
+        printCommands();
+      else
+      {
+        int card = std::stoi(commands[1]);
+        int player = std::stoi(commands[2]);
+        if (_players[player]->breakTool(_players[currentPlayer()]->getBrokenTool(card)))
+        {
+          _players[currentPlayer()]->discardCard(card);
           break;
         }
         else
-          std::cout << "failed to place path" << std::endl;
+          std::cout << "failed to break the tool" << std::endl;
       }
     }
-    else if (commands[0] == "discard")
+    else if (commands[0] == "f")
+    {
+      if (commands.size() != 4)
+        printCommands();
+      else
+      {
+        int card = std::stoi(commands[1]);
+        int player = std::stoi(commands[2]);
+        int broken_tool = std::stoi(commands[3]);
+        BrokenTool * fixed_broken_tool =
+            _players[player]->fixTool(_players[currentPlayer()]->getFixedTool(card), broken_tool);
+        if (fixed_broken_tool)
+        {
+          _graveyard.push_back(_players[currentPlayer()]->getCard(card));
+          _graveyard.push_back(fixed_broken_tool);
+          _players[currentPlayer()]->discardCard(card);
+          break;
+        }
+        else
+          std::cout << "failed to fix the tool" << std::endl;
+      }
+    }
+    else if (commands[0] == "d")
     {
       if (commands.size() != 2)
         printCommands();
@@ -258,13 +338,14 @@ Game::printCommands()
   std::cout << std::endl;
   std::cout << dividerBottom() << std::endl;
   std::cout << "Avalable commands:" << std::endl;
-  std::cout << "     rotate <card>              ----     rotate a path card" << std::endl;
-  std::cout << "     path <card> <x> <y>        ----     place a path card at that location"
+  std::cout << "     r <card>                    ----     rotate a path card" << std::endl;
+  std::cout << "     p <card> <x> <y>            ----     place a path card at that location"
             << std::endl;
-  std::cout << "     action <card> <player>     ----     place an action card on that player"
+  std::cout << "     b <card> <player>           ----     break a player's tool" << std::endl;
+  std::cout << "     f <card> <player> <tool>    ----     fix a player's certain broken tool"
             << std::endl;
-  std::cout << "     discard <card>             ----     discard that card" << std::endl;
-  std::cout << "     quit                       ----     quit game" << std::endl;
+  std::cout << "     d <card>                    ----     discard that card" << std::endl;
+  std::cout << "     q                           ----     quit game" << std::endl;
   std::cout << dividerTop() << std::endl;
   std::cout << std::endl;
 }

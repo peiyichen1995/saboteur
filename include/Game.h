@@ -2,6 +2,7 @@
 
 #include "Board.h"
 #include "Player.h"
+#include "FixedTool.h"
 
 class Game;
 
@@ -24,6 +25,12 @@ protected:
 private:
   // create path helper
   void createPathHelper(Connectivity conn, bool T, bool R, bool B, bool L, unsigned int num);
+
+  // create broken tool helper
+  void createBrokenToolHelper(Tool tool, unsigned int num);
+
+  // create fixed tool helper
+  void createFixedToolHelper(Tool tool, unsigned int num);
 
   // distribute one card to one player
   void distributeCardToPlayer(unsigned int i);
