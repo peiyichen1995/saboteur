@@ -3,6 +3,7 @@
 #include "Board.h"
 #include "Player.h"
 #include "FixedTool.h"
+#include "Map.h"
 
 class Game;
 
@@ -31,6 +32,9 @@ private:
 
   // create fixed tool helper
   void createFixedToolHelper(Tool tool, unsigned int num);
+
+  // create map helper
+  void createMapHelper(int treasure, unsigned int num);
 
   // distribute one card to one player
   void distributeCardToPlayer(unsigned int i);

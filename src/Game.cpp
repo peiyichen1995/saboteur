@@ -54,9 +54,6 @@ Game::Game(unsigned int num)
   createFixedToolHelper(Tool::lanternandshovel, 1);
   createFixedToolHelper(Tool::shovelandcart, 1);
 
-  // shuffle deck
-  std::random_shuffle(_deck.begin(), _deck.end());
-
   // create start Path
   _start = new StartingPath(conn3, true, true, true, true);
   _board->placePathInSlot(_start, 2, 0);
@@ -70,6 +67,12 @@ Game::Game(unsigned int num)
   _board->placePathInSlot(_stone1, secret[1], 8);
   _stone2 = new Stone(conn3, true, true, true, true);
   _board->placePathInSlot(_stone2, secret[2], 8);
+
+  // create maps
+  createMapHelper(secret[0] / 2, 6);
+
+  // shuffle deck
+  std::random_shuffle(_deck.begin(), _deck.end());
 
   Player * player;
   // create players
@@ -116,6 +119,17 @@ Game::createBrokenToolHelper(Tool tool, unsigned int num)
   for (unsigned int i = 0; i < num; i++)
   {
     temp = new BrokenTool(tool);
+    _deck.push_back(temp);
+  }
+}
+
+void
+Game::createMapHelper(int treasure, unsigned int num)
+{
+  Map * temp = nullptr;
+  for (unsigned int i = 0; i < num; i++)
+  {
+    temp = new Map(treasure);
     _deck.push_back(temp);
   }
 }
@@ -295,7 +309,25 @@ Game::onTurnBegin()
         break;
       }
     }
-    else if (commands[0] == "quit")
+    else if (commands[0] == "m")
+    {
+      if (commands.size() != 3)
+        printCommands();
+      else
+      {
+        int index = std::stoi(commands[1]);
+        int goal = std::stoi(commands[2]);
+        Map * m = _players[currentPlayer()]->getMap(index);
+        if (m->reveal(goal))
+          std::cout << "that's a treasure" << std::endl;
+        else
+          std::cout << "that's a stone" << std::endl;
+        _graveyard.push_back(m);
+        _players[currentPlayer()]->discardCard(index);
+        break;
+      }
+    }
+    else if (commands[0] == "q")
     {
       if (commands.size() != 1)
         printCommands();
@@ -345,6 +377,7 @@ Game::printCommands()
   std::cout << "     f <card> <player> <tool>    ----     fix a player's certain broken tool"
             << std::endl;
   std::cout << "     d <card>                    ----     discard that card" << std::endl;
+  std::cout << "     m <card> <goal>             ----     reveal that goal" << std::endl;
   std::cout << "     q                           ----     quit game" << std::endl;
   std::cout << dividerTop() << std::endl;
   std::cout << std::endl;

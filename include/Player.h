@@ -3,6 +3,7 @@
 #include "Path.h"
 #include "BrokenTool.h"
 #include "FixedTool.h"
+#include "Map.h"
 
 class Player
 {
@@ -38,6 +39,7 @@ public:
 
   Card * getCard(unsigned int i) { return _hand[i]; }
   Path * getPath(unsigned int i) { return dynamic_cast<Path *>(_hand[i]); }
+  Map * getMap(unsigned int i) { return dynamic_cast<Map *>(_hand[i]); }
   BrokenTool * getBrokenTool(unsigned int i) { return dynamic_cast<BrokenTool *>(_hand[i]); }
   FixedTool * getFixedTool(unsigned int i) { return dynamic_cast<FixedTool *>(_hand[i]); }
 
